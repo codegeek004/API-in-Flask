@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slots</title>
+</head>
+<body>
+    <h1>Slots</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <a href="{{ url_for('create_slot') }}">Add New Slot</a>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Slot ID</th>
+                <th>Space</th>
+                <th>Price</th>
+                <th>Total Slots</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in data %}
+            <tr>
+                <td>{{ slot.SlotID }}</td>
+                <td>{{ slot.space }}</td>
+                <td>{{ slot.price }}</td>
+                <td>{{ slot.total_slots }}</td>
+                <td>
+                    <a href="{{ url_for('update_slot_form', slot_id=slot.SlotID) }}">Update</a> |
+                    <form action="{{ url_for('delete_slot', slot_id=slot.SlotID) }}" method="POST" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

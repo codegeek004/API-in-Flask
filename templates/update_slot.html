@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Slot</title>
+</head>
+<body>
+    <h1>Update Slot</h1>
+
+    <form action="{{ url_for('update_slot', slot_id=slot.SlotID) }}" method="POST">
+        <label for="space">Space:</label>
+        <input type="text" name="space" id="space" value="{{ slot.space }}" required><br>
+
+        <label for="price">Price:</label>
+        <input type="number" name="price" id="price" value="{{ slot.price }}" required><br>
+
+        <label for="total_slots">Total Slots:</label>
+        <input type="number" name="total_slots" id="total_slots" value="{{ slot.total_slots }}" required><br>
+
+        <button type="submit">Update Slot</button>
+    </form>
+
+    <a href="{{ url_for('slot_view') }}">Back to Slots</a>
+</body>
+</html>
