@@ -71,30 +71,133 @@ def vehicle_view():
 		time.sleep(5)
 	return render_template('vehicle.html')
 
-
-@app.route('/slots/', methods=['GET','POST'])
+slot_url = 'http://127.0.0.1:8000/slots/'
+@app.route('/slots/', methods=['GET'])
 def slot_view():
-	vehicle_url = 'http://127.0.0.1:8000/slots/'
-	token = session.get('token')
-	if not token:
-		print(session)
-		return redirect(url_for('login_view'))
-	headers = {'Authorization':f'Bearer {token}'}
+    token = session.get('token')
+    if not token:
+        print(session)
+        return redirect(url_for('login_view'))
+    headers = {'Authorization':f'Bearer {token}'}
+    try:
+        response = requests.get(slot_url, headers=headers)
+        print(response)
+        if response.status_code == 200:
+            slots = response.json()
+            return render_template('slots.html', data=slots)
+        else:
+            return "Failed to fetch data"
+    except Exception as e:
+        print('e',e)
+        # return jsonify({"error": str(e)})
 
-	try:
-		response = requests.get(vehicle_url, headers=headers)
-		print('response', response)
-		if response.status_code == 200:
-			data = response.json()
-			data = json.loads(data)
-			return render_template('vehicle.html', data=data)
-		else:
-			return "Creds not provided"
-	except Exception as e:
-		# return 'exception mai gaya'
-		print('e',e)
-		time.sleep(5)
-	return render_template('vehicle.html')
+@app.route('/slots/add', methods=['GET', 'POST'])
+def create_slot():
+    if request.method == 'POST':
+        space = request.form.get('space')
+        price = request.form.get('price')
+        total_slots = request.form.get('total_slots')
+        
+        data = {
+            "space": space,
+            "price": price,
+            "total_slots": total_slots
+        }
+
+        token = session.get('token')
+        if not token:
+            print(session)
+            return redirect(url_for('login_view'))
+
+        headers = {'Authorization': f'Bearer {token}'}
+        
+        try:
+            response = requests.post(slot_url, json=data, headers=headers)
+            if response.status_code == 201:
+                flash("New slot added successfully", "success")
+            else:
+                flash("Failed to add new slot", "error")
+        except Exception as e:
+            print('Error:', e)
+            flash("An error occurred while adding the slot", "error")
+        
+        return redirect(url_for('slot_view'))
+    
+    return render_template('add_slot.html')
+
+
+@app.route('/slots/<int:slot_id>/update', methods=['GET'])
+def update_slot_form(slot_id):
+    token = session.get('token')
+    if not token:
+        print(session)
+        return redirect(url_for('login_view'))
+    headers = {'Authorization':f'Bearer {token}'}
+    try:
+        response = requests.get(f"{slot_url}{slot_id}/", headers=headers)
+        if response.status_code == 200:
+            slot = response.json()
+            return render_template('update_slot.html', slot=slot)
+        else:
+            flash("Slot not found", "error")
+            return redirect(url_for('slot_view'))
+    except Exception as e:
+        print('e',e)
+        return redirect(url_for('slot_view'))
+
+
+@app.route('/slots/<int:slot_id>/update', methods=['POST'])
+def update_slot(slot_id):
+
+    space = request.form['space']
+    price = request.form['price']
+    total_slots = request.form['total_slots']
+    
+    data = {
+        "space": space,
+        "price": price,
+        "total_slots": total_slots
+    }
+    token = session.get('token')
+    if not token:
+        print(session)
+        return redirect(url_for('login_view'))
+    headers = {'Authorization':f'Bearer {token}'}
+    try:
+        response = requests.put(f"{slot_url}{slot_id}/", json=data, headers=headers)
+        if response.status_code == 200:
+            flash("Slot updated successfully", "success")
+        else:
+            flash("Failed to update slot", "error")
+    except Exception as e:
+        print('e',e)
+    
+    return redirect(url_for('slot_view'))
+
+
+@app.route('/slots/<int:slot_id>/delete', methods=['POST'])
+def delete_slot(slot_id):
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login_view'))
+
+    headers = {'Authorization': f'Bearer {token}'}
+    
+    try:
+        response = requests.delete(f"{slot_url}{slot_id}/", headers=headers)
+        if response.status_code == 204:
+            flash(f"Slot {slot_id} deleted successfully", "success")
+        else:
+            flash("Failed to delete slot", "error")
+    except Exception as e:
+        print('Error:', e)
+        flash("Error occurred while deleting slot", "error")
+
+
+    return redirect(url_for('slot_view'))
+
+
+
 
 
 if __name__=='__main__':
